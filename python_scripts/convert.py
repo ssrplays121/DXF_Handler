@@ -217,8 +217,36 @@ def extract_dxf_entities(entities, error_tracker: DXFErrorTracker) -> List[Dict[
                 'attributes': {}
             }
 
-            # FIXED: Properly extract DXF attributes without bound methods
-            entity_info['attributes'] = get_actual_dxf_attributes(entity, error_tracker, context)
+            # Extract DXF attributes properly - only get actual values, not methods
+            if hasattr(entity, 'dxf'):
+                try:
+                    # Get all actual DXF attributes using proper ezdxf method
+                    if hasattr(entity.dxf, 'all_existing_dxf_attribs'):
+                        dxf_attribs = entity.dxf.all_existing_dxf_attribs()
+                        for attr_name, attr_value in dxf_attribs.items():
+                            # Skip internal attributes and methods
+                            if not callable(attr_value) and not attr_name.startswith('_'):
+                                entity_info['attributes'][attr_name] = serialize_dxf_value(attr_value)
+                    else:
+                        # Fallback method for older ezdxf versions
+                        standard_attributes = ['handle', 'layer', 'color', 'linetype', 'lineweight', 'thickness', 'start', 'end', 'center', 'radius', 'start_angle', 'end_angle', 'text', 'height', 'insert', 'style', 'elevation', 'flags', 'const_width', 'owner', 'extrusion', 'defpoint', 'defpoint2', 'defpoint3', 'actual_measurement', 'angle', 'attachment_point', 'dimstyle', 'id', 'status', 'view_height', 'view_center_point', 'view_target_point']
+                        for attr_name in standard_attributes:
+                            if hasattr(entity.dxf, attr_name):
+                                attr_value = getattr(entity.dxf, attr_name)
+                                if not callable(attr_value):
+                                    entity_info['attributes'][attr_name] = serialize_dxf_value(attr_value)
+                except Exception as e:
+                    error_tracker.add_error(f"{context}.attribute_extraction", e, entity_type)
+                    # Fallback to minimal attribute extraction
+                    minimal_attrs = ['handle', 'layer', 'color', 'linetype']
+                    for attr_name in minimal_attrs:
+                        if hasattr(entity.dxf, attr_name):
+                            try:
+                                attr_value = getattr(entity.dxf, attr_name)
+                                if not callable(attr_value):
+                                    entity_info['attributes'][attr_name] = serialize_dxf_value(attr_value)
+                            except:
+                                pass
 
             # Special handling for text entities
             if entity_type in ['TEXT', 'MTEXT', 'ATTRIB']:
@@ -251,7 +279,7 @@ def extract_dxf_entities(entities, error_tracker: DXFErrorTracker) -> List[Dict[
                             })
 
             # Handle geometry data for different entity types
-            if entity_type in ['LINE', 'CIRCLE', 'ARC', 'ELLIPSE', 'LWPOLYLINE', 'POLYLINE', 'SPLINE', 'POINT', 'DIMENSION', 'VIEWPORT']:
+            if entity_type in ['LINE', 'CIRCLE', 'ARC', 'ELLIPSE', 'LWPOLYLINE', 'POLYLINE', 'SPLINE', 'POINT', 'DIMENSION', 'TEXT', 'MTEXT', 'ATTRIB', 'VIEWPORT']:
                 entity_info['geometry'] = extract_geometry_data(entity, error_tracker, context)
 
             entity_data.append(entity_info)
@@ -276,7 +304,7 @@ def extract_dxf_entities(entities, error_tracker: DXFErrorTracker) -> List[Dict[
 def extract_geometry_data(entity, error_tracker: DXFErrorTracker, context: str) -> Dict[str, Any]:
     """
     Extract geometry-specific data from entities with error handling
-    Enhanced to handle more entity types properly
+    Enhanced to handle all entity types properly
     """
     geometry = {}
     entity_type = entity.dxftype() if hasattr(entity, 'dxftype') else 'UNKNOWN'
@@ -382,11 +410,27 @@ def extract_geometry_data(entity, error_tracker: DXFErrorTracker, context: str) 
             }
         elif entity_type == 'SPLINE':
             try:
+                # Get control points, knots, and fit points properly
+                control_points = []
+                knots = []
+                fit_points = []
+                
+                if hasattr(entity, 'control_points'):
+                    for cp in entity.control_points:
+                        control_points.append(serialize_dxf_value(cp))
+                if hasattr(entity, 'knots'):
+                    knots = [float(k) for k in entity.knots]
+                if hasattr(entity, 'fit_points'):
+                    for fp in entity.fit_points:
+                        fit_points.append(serialize_dxf_value(fp))
+                
                 geometry = {
                     'degree': safe_dxf_getattr(entity.dxf, 'degree', 3, error_tracker, f"{context}.spline"),
-                    'knots': serialize_dxf_value(safe_dxf_getattr(entity.dxf, 'knots', [], error_tracker, f"{context}.spline")),
-                    'control_points': serialize_dxf_value(safe_dxf_getattr(entity.dxf, 'control_points', [], error_tracker, f"{context}.spline")),
-                    'fit_points': serialize_dxf_value(safe_dxf_getattr(entity.dxf, 'fit_points', [], error_tracker, f"{context}.spline"))
+                    'knots': knots,
+                    'control_points': control_points,
+                    'fit_points': fit_points,
+                    'closed': safe_getattr(entity, 'closed', False, error_tracker, f"{context}.spline"),
+                    'periodic': safe_getattr(entity, 'periodic', False, error_tracker, f"{context}.spline")
                 }
             except Exception as e:
                 error_tracker.add_error(f"{context}.spline.geometry", e, entity_type)
@@ -395,7 +439,9 @@ def extract_geometry_data(entity, error_tracker: DXFErrorTracker, context: str) 
                     'degree': 3,
                     'knots': [],
                     'control_points': [],
-                    'fit_points': []
+                    'fit_points': [],
+                    'closed': False,
+                    'periodic': False
                 }
         elif entity_type == 'DIMENSION':
             try:
@@ -406,10 +452,23 @@ def extract_geometry_data(entity, error_tracker: DXFErrorTracker, context: str) 
                     'text_midpoint': serialize_dxf_value(safe_dxf_getattr(entity.dxf, 'text_midpoint', None, error_tracker, f"{context}.dimension")),
                     'actual_measurement': float(safe_dxf_getattr(entity.dxf, 'actual_measurement', 0.0, error_tracker, f"{context}.dimension")),
                     'angle': float(safe_dxf_getattr(entity.dxf, 'angle', 0.0, error_tracker, f"{context}.dimension")),
-                    'dimstyle': safe_dxf_getattr(entity.dxf, 'dimstyle', '', error_tracker, f"{context}.dimension")
+                    'dimstyle': safe_dxf_getattr(entity.dxf, 'dimstyle', '', error_tracker, f"{context}.dimension"),
+                    'attachment_point': safe_dxf_getattr(entity.dxf, 'attachment_point', 5, error_tracker, f"{context}.dimension")
                 }
             except Exception as e:
                 error_tracker.add_error(f"{context}.dimension.geometry", e, entity_type)
+                geometry = {'error': str(e)}
+        elif entity_type == 'TEXT' or entity_type == 'MTEXT' or entity_type == 'ATTRIB':
+            try:
+                geometry = {
+                    'insert': serialize_dxf_value(safe_dxf_getattr(entity.dxf, 'insert', None, error_tracker, f"{context}.text")),
+                    'height': float(safe_dxf_getattr(entity.dxf, 'height', 1.0, error_tracker, f"{context}.text")),
+                    'rotation': float(safe_dxf_getattr(entity.dxf, 'rotation', 0.0, error_tracker, f"{context}.text")),
+                    'text': safe_dxf_getattr(entity.dxf, 'text', '', error_tracker, f"{context}.text"),
+                    'style': safe_dxf_getattr(entity.dxf, 'style', 'Standard', error_tracker, f"{context}.text")
+                }
+            except Exception as e:
+                error_tracker.add_error(f"{context}.text.geometry", e, entity_type)
                 geometry = {'error': str(e)}
         elif entity_type == 'VIEWPORT':
             try:
@@ -420,7 +479,8 @@ def extract_geometry_data(entity, error_tracker: DXFErrorTracker, context: str) 
                     'view_center_point': serialize_dxf_value(safe_dxf_getattr(entity.dxf, 'view_center_point', None, error_tracker, f"{context}.viewport")),
                     'view_height': float(safe_dxf_getattr(entity.dxf, 'view_height', 0.0, error_tracker, f"{context}.viewport")),
                     'view_target_point': serialize_dxf_value(safe_dxf_getattr(entity.dxf, 'view_target_point', None, error_tracker, f"{context}.viewport")),
-                    'id': int(safe_dxf_getattr(entity.dxf, 'id', 0, error_tracker, f"{context}.viewport"))
+                    'id': int(safe_dxf_getattr(entity.dxf, 'id', 0, error_tracker, f"{context}.viewport")),
+                    'status': int(safe_dxf_getattr(entity.dxf, 'status', 0, error_tracker, f"{context}.viewport"))
                 }
             except Exception as e:
                 error_tracker.add_error(f"{context}.viewport.geometry", e, entity_type)
@@ -607,19 +667,40 @@ def extract_dxf_complete_info(dxf_path: str) -> Dict[str, Any]:
                     try:
                         name = safe_dxf_getattr(linetype.dxf, 'name', f'linetype_{i}', error_tracker, context)
                         description = safe_dxf_getattr(linetype.dxf, 'description', '', error_tracker, context)
-                        pattern = safe_getattr(linetype, 'pattern_tags', None, error_tracker, context)
-
+                        
+                        # Properly extract pattern data
+                        pattern_data = None
+                        try:
+                            if hasattr(linetype, 'pattern_tags') and hasattr(linetype.pattern_tags, 'tags'):
+                                # Extract the actual pattern tags
+                                pattern_tags = linetype.pattern_tags.tags
+                                pattern_data = [str(tag) for tag in pattern_tags]
+                            elif hasattr(linetype, 'dxf') and hasattr(linetype.dxf, 'pattern'):
+                                pattern_data = str(linetype.dxf.pattern)
+                            elif hasattr(linetype, 'get_pattern'):
+                                pattern_data = str(linetype.get_pattern())
+                        except Exception as e:
+                            error_tracker.add_error(f"{context}.pattern_extraction", e)
+                            pattern_data = f"Error extracting pattern: {str(e)}"
+                        
+                        # Fallback if pattern_data is still None
+                        if pattern_data is None:
+                            try:
+                                pattern_data = str(linetype.pattern_tags) if hasattr(linetype, 'pattern_tags') else None
+                            except:
+                                pattern_data = "Pattern extraction failed"
+                        
                         linetypes.append({
                             'name': name,
                             'description': description,
-                            'pattern': str(pattern) if pattern else None
+                            'pattern': pattern_data
                         })
                     except Exception as e:
                         error_tracker.add_error(context, e)
                         linetypes.append({
                             'name': f'linetype_{i}_error',
                             'description': 'error',
-                            'pattern': None,
+                            'pattern': f"Error: {str(e)}",
                             'error': str(e)
                         })
         except Exception as e:

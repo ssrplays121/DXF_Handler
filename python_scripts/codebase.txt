@@ -1,21 +1,20 @@
 ======================================================================
-          📚 CODEBASE COMPILATION ARCHIVE 📚
+          codeBASED COMPILATION ARCHIVE
 ======================================================================
 
-📁 Source Directory: /home/ssr/GitHub/DXF_Handler
-💾 Output File: /home/ssr/GitHub/DXF_Handler/codebase.txt
-📊 Total Files: 7
-📅 Compiled on: 2026-01-16 at 20:47:41
+// Source Directory: /home/ssr/GitHub/DXF_Handler
+// Output File: /home/ssr/GitHub/DXF_Handler/codebase.txt
+// Total Files: 7
+// Compiled on: 2026-01-16 at 21:08:18
 ======================================================================
 
-▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-📄 FILE: convert.py
-──────────────────────────────────────────────────────────────────────
-📍 Full Path: /home/ssr/GitHub/DXF_Handler/convert.py
-📏 Size: 36.6 KB
-🕒 Last Modified: 2026-01-16 20:27:12
-🔢 Lines: 814
-──────────────────────────────────────────────────────────────────────
+// ===================================================================
+// FILE: convert.py
+// Path: /home/ssr/GitHub/DXF_Handler/convert.py
+// Size: 36.6 KB
+// Last Modified: 2026-01-16 20:27:12
+// Lines: 814
+// ===================================================================
 
 import ezdxf
 import json
@@ -831,16 +830,14 @@ if __name__ == "__main__":
         print(f"💥 Unexpected error: {str(e)}")
         traceback.print_exc()
         sys.exit(1)
-──────────────────────────────────────────────────────────────────────
 
-▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-📄 FILE: JSON_Doc.md
-──────────────────────────────────────────────────────────────────────
-📍 Full Path: /home/ssr/GitHub/DXF_Handler/JSON_Doc.md
-📏 Size: 8.0 KB
-🕒 Last Modified: 2026-01-16 19:07:53
-🔢 Lines: 299
-──────────────────────────────────────────────────────────────────────
+// ===================================================================
+// FILE: JSON_Doc.md
+// Path: /home/ssr/GitHub/DXF_Handler/JSON_Doc.md
+// Size: 8.0 KB
+// Last Modified: 2026-01-16 19:07:53
+// Lines: 299
+// ===================================================================
 
 # DXF to JSON Conversion Documentation
 
@@ -1142,16 +1139,14 @@ The converter attempts automatic recovery when:
 - Check `extraction_metadata.error_details.has_errors` before relying on data integrity
 - Review missing values summary for data completeness assessment
 
-──────────────────────────────────────────────────────────────────────
 
-▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-📄 FILE: layering.py
-──────────────────────────────────────────────────────────────────────
-📍 Full Path: /home/ssr/GitHub/DXF_Handler/layering.py
-📏 Size: 26.1 KB
-🕒 Last Modified: 2026-01-15 22:10:08
-🔢 Lines: 610
-──────────────────────────────────────────────────────────────────────
+// ===================================================================
+// FILE: layering.py
+// Path: /home/ssr/GitHub/DXF_Handler/layering.py
+// Size: 26.1 KB
+// Last Modified: 2026-01-15 22:10:08
+// Lines: 610
+// ===================================================================
 
 # layering.py
 import ezdxf
@@ -1764,16 +1759,14 @@ if __name__ == "__main__":
         traceback.print_exc()
         sys.exit(1)
 
-──────────────────────────────────────────────────────────────────────
 
-▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-📄 FILE: LAYERS.md
-──────────────────────────────────────────────────────────────────────
-📍 Full Path: /home/ssr/GitHub/DXF_Handler/LAYERS.md
-📏 Size: 8.3 KB
-🕒 Last Modified: 2026-01-16 19:41:20
-🔢 Lines: 239
-──────────────────────────────────────────────────────────────────────
+// ===================================================================
+// FILE: LAYERS.md
+// Path: /home/ssr/GitHub/DXF_Handler/LAYERS.md
+// Size: 8.3 KB
+// Last Modified: 2026-01-16 19:41:20
+// Lines: 239
+// ===================================================================
 
 # Layer Attributes and Properties
 
@@ -2015,16 +2008,14 @@ Layers are fundamental organizational units in DXF files that control object vis
 - **Large files**: Process layers in batches to avoid memory issues
 - **Color mapping**: Cache ACI-to-RGB conversions for repeated use
 
-──────────────────────────────────────────────────────────────────────
 
-▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-📄 FILE: readme.md
-──────────────────────────────────────────────────────────────────────
-📍 Full Path: /home/ssr/GitHub/DXF_Handler/readme.md
-📏 Size: 5.1 KB
-🕒 Last Modified: 2026-01-15 22:14:16
-🔢 Lines: 150
-──────────────────────────────────────────────────────────────────────
+// ===================================================================
+// FILE: readme.md
+// Path: /home/ssr/GitHub/DXF_Handler/readme.md
+// Size: 5.1 KB
+// Last Modified: 2026-01-15 22:14:16
+// Lines: 150
+// ===================================================================
 
 # DXF Processing Toolkit
 ## Overview
@@ -2177,16 +2168,14 @@ All scripts include comprehensive error handling:
 
 This toolkit provides a complete solution for DXF file analysis, conversion, and processing, suitable for CAD automation, BIM workflows, and geometric analysis applications.
 
-──────────────────────────────────────────────────────────────────────
 
-▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-📄 FILE: segregation.py
-──────────────────────────────────────────────────────────────────────
-📍 Full Path: /home/ssr/GitHub/DXF_Handler/segregation.py
-📏 Size: 47.1 KB
-🕒 Last Modified: 2026-01-15 18:14:23
-🔢 Lines: 1175
-──────────────────────────────────────────────────────────────────────
+// ===================================================================
+// FILE: segregation.py
+// Path: /home/ssr/GitHub/DXF_Handler/segregation.py
+// Size: 47.1 KB
+// Last Modified: 2026-01-15 18:14:23
+// Lines: 1175
+// ===================================================================
 
 #!/usr/bin/env python3
 """
@@ -3364,16 +3353,14 @@ def main():
 if __name__ == "__main__":
     main()
 
-──────────────────────────────────────────────────────────────────────
 
-▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-📄 FILE: simplify.py
-──────────────────────────────────────────────────────────────────────
-📍 Full Path: /home/ssr/GitHub/DXF_Handler/simplify.py
-📏 Size: 13.6 KB
-🕒 Last Modified: 2026-01-12 21:50:33
-🔢 Lines: 367
-──────────────────────────────────────────────────────────────────────
+// ===================================================================
+// FILE: simplify.py
+// Path: /home/ssr/GitHub/DXF_Handler/simplify.py
+// Size: 13.6 KB
+// Last Modified: 2026-01-12 21:50:33
+// Lines: 367
+// ===================================================================
 
 import json
 import sys
@@ -3743,14 +3730,13 @@ if __name__ == "__main__":
         traceback.print_exc()
         sys.exit(1)
 
-──────────────────────────────────────────────────────────────────────
 
 ======================================================================
-          ✅ COMPILATION COMPLETE ✅
+          COMPILATION COMPLETE
 ======================================================================
 
-📊 Summary:
-   ✅ Successfully processed: 7 files
-   ❌ Errors encountered: 0 files
-   📁 Total size: 90.2 KB
-   ⏱️  Completed at: 2026-01-16 20:47:41
+// Summary:
+//   Successfully processed: 7 files
+//   Errors encountered: 0 files
+//   Total size: 86.2 KB
+//   Completed at: 2026-01-16 21:08:18
