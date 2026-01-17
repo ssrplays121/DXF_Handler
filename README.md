@@ -30,3 +30,4 @@ First, generate the layer JSON files using the `layering.py` script:
 
 ```bash
 python layering.py input.dxf --output ./dxf_data
+```

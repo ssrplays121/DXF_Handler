@@ -207,14 +207,20 @@ def extract_entity_geometry(entity) -> Dict[str, Any]:
 
         elif entity_type == 'TEXT':
             insert = safe_getattr(entity.dxf, 'insert')
+            align_point = safe_getattr(entity.dxf, 'align_point')
             height = safe_getattr(entity.dxf, 'height')
             rotation = safe_getattr(entity.dxf, 'rotation')
             width = safe_getattr(entity.dxf, 'width', 1.0)
+            halign = safe_getattr(entity.dxf, 'halign', 0)
+            valign = safe_getattr(entity.dxf, 'valign', 0)
             geometry = {
                 'position': serialize_dxf_value(insert),
+                'align_point': serialize_dxf_value(align_point), # Added alignment point
                 'height': float(height) if height is not None else 0.0,
                 'rotation': float(rotation) if rotation is not None else 0.0,
-                'width_factor': float(width) if width is not None else 1.0
+                'width_factor': float(width) if width is not None else 1.0,
+                'halign': int(halign), # Added horizontal alignment
+                'valign': int(valign)  # Added vertical alignment
             }
 
         elif entity_type == 'MTEXT':
@@ -222,11 +228,13 @@ def extract_entity_geometry(entity) -> Dict[str, Any]:
             height = safe_getattr(entity.dxf, 'height')
             width = safe_getattr(entity.dxf, 'width', 0.0)
             attachment = safe_getattr(entity.dxf, 'attachment_point')
+            flow_direction = safe_getattr(entity.dxf, 'flow_direction')
             geometry = {
                 'position': serialize_dxf_value(insert),
                 'height': float(height) if height is not None else 0.0,
                 'width': float(width) if width is not None else 0.0,
-                'attachment_point': int(attachment) if attachment is not None else 1
+                'attachment_point': int(attachment) if attachment is not None else 1,
+                'flow_direction': int(flow_direction) if flow_direction is not None else 1
             }
 
         elif entity_type == 'INSERT':
@@ -249,6 +257,7 @@ def extract_entity_geometry(entity) -> Dict[str, Any]:
             defpoint3 = safe_getattr(entity.dxf, 'defpoint3')
             text_midpoint = safe_getattr(entity.dxf, 'text_midpoint')
             actual = safe_getattr(entity.dxf, 'actual_measurement')
+            text_override = safe_getattr(entity.dxf, 'text') # Added text override
             geometry = {
                 'definition_points': {
                     'defpoint': serialize_dxf_value(defpoint),
@@ -256,27 +265,52 @@ def extract_entity_geometry(entity) -> Dict[str, Any]:
                     'defpoint3': serialize_dxf_value(defpoint3)
                 },
                 'text_position': serialize_dxf_value(text_midpoint),
-                'measured_value': float(actual) if actual is not None else 0.0
+                'measured_value': float(actual) if actual is not None else 0.0,
+                'text_override': text_override if text_override else None # Capture user-forced text
             }
 
         elif entity_type == 'LWPOLYLINE':
             vertices = []
             total_length = 0.0
-            if hasattr(entity, 'vertices'):
-                prev_point = None
+            closed = safe_getattr(entity, 'closed', False)
+            
+            # UPDATED: Use get_points to capture bulge (curvature)
+            # format='xyb' returns tuples of (x, y, bulge)
+            try:
+                if hasattr(entity, 'get_points'):
+                    points = entity.get_points(format='xyb')
+                    prev_point = None
+                    for p in points:
+                        x, y, bulge = p[0], p[1], p[2]
+                        vertices.append({'x': x, 'y': y, 'bulge': float(bulge)})
+                        
+                        if prev_point:
+                            dx = x - prev_point[0]
+                            dy = y - prev_point[1]
+                            total_length += math.sqrt(dx*dx + dy*dy)
+                        prev_point = (x, y)
+                    
+                    # Add closing segment length if closed
+                    if closed and len(points) > 1:
+                        first = points[0]
+                        last = points[-1]
+                        dx = first[0] - last[0]
+                        dy = first[1] - last[1]
+                        total_length += math.sqrt(dx*dx + dy*dy)
+                else:
+                    # Fallback for very old ezdxf versions
+                    for vertex in entity.vertices():
+                        if len(vertex) >= 2:
+                            vertices.append({'x': float(vertex[0]), 'y': float(vertex[1]), 'bulge': 0.0})
+            except Exception as e:
+                # Fallback if get_points fails
                 for vertex in entity.vertices():
                     if len(vertex) >= 2:
-                        point = (float(vertex[0]), float(vertex[1]))
-                        vertices.append({'x': point[0], 'y': point[1]})
-                        if prev_point:
-                            dx = point[0] - prev_point[0]
-                            dy = point[1] - prev_point[1]
-                            total_length += math.sqrt(dx*dx + dy*dy)
-                        prev_point = point
+                        vertices.append({'x': float(vertex[0]), 'y': float(vertex[1])})
 
             geometry = {
                 'vertices': vertices,
-                'closed': safe_getattr(entity, 'closed', False),
+                'closed': closed,
                 'total_length': total_length
             }
 
@@ -286,7 +320,12 @@ def extract_entity_geometry(entity) -> Dict[str, Any]:
                 for vertex in entity.vertices:
                     if hasattr(vertex.dxf, 'location'):
                         loc = vertex.dxf.location
-                        vertices.append(serialize_dxf_value(loc))
+                        # 3D Polylines don't use bulge the same way, but 2D heavy polylines do.
+                        bulge = safe_getattr(vertex.dxf, 'bulge', 0.0) 
+                        v_data = serialize_dxf_value(loc)
+                        if isinstance(v_data, dict):
+                            v_data['bulge'] = float(bulge)
+                        vertices.append(v_data)
 
             geometry = {
                 'vertices': vertices,
@@ -329,7 +368,10 @@ def extract_entity_geometry(entity) -> Dict[str, Any]:
             geometry = {
                 'pattern_name': safe_getattr(entity.dxf, 'pattern_name', 'SOLID'),
                 'solid_fill': safe_getattr(entity, 'solid_fill', True),
-                'associative': safe_getattr(entity, 'associative', False)
+                'associative': safe_getattr(entity, 'associative', False),
+                'pattern_scale': float(safe_getattr(entity.dxf, 'pattern_scale', 1.0)), # Added Scale
+                'pattern_angle': float(safe_getattr(entity.dxf, 'pattern_angle', 0.0)), # Added Angle
+                'color': safe_getattr(entity.dxf, 'color')
             }
 
         else:
