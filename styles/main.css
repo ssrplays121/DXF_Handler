@@ -21,7 +21,7 @@
     --gray-700: #374151;
     --gray-800: #1f2937;
     --gray-900: #111827;
-    
+
     /* Spacing */
     --spacing-xs: 4px;
     --spacing-sm: 8px;
@@ -29,7 +29,7 @@
     --spacing-lg: 24px;
     --spacing-xl: 32px;
     --spacing-2xl: 48px;
-    
+
     /* Typography */
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'Roboto Mono', 'Courier New', monospace;
@@ -40,25 +40,25 @@
     --font-size-xl: 20px;
     --font-size-2xl: 24px;
     --font-size-3xl: 32px;
-    
+
     /* Borders */
     --border-radius-sm: 4px;
     --border-radius: 8px;
     --border-radius-lg: 12px;
     --border-radius-xl: 16px;
-    
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-md: 0 6px 12px -2px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    
+
     /* Transitions */
     --transition-fast: 150ms ease;
     --transition: 250ms ease;
     --transition-slow: 350ms ease;
-    
+
     /* Z-index layers */
     --z-dropdown: 100;
     --z-sticky: 200;
@@ -96,13 +96,16 @@ body {
 }
 
 /* Header Styles */
+/* Make header less tall too */
 .app-header {
     background: white;
     border-radius: var(--border-radius-lg);
-    padding: var(--spacing-xl);
+    padding: var(--spacing-lg) var(--spacing-xl);
     margin-bottom: var(--spacing-lg);
     box-shadow: var(--shadow);
     border-left: 6px solid var(--primary-color);
+    min-height: 120px;
+    /* Reduced height */
 }
 
 .header-title {
@@ -261,12 +264,14 @@ body {
 }
 
 /* Main Layout */
+/* Update main layout to prevent stretching */
 .main-layout {
     display: grid;
     grid-template-columns: 300px 1fr;
     gap: var(--spacing-lg);
     flex: 1;
     min-height: 600px;
+    align-items: start;
 }
 
 /* Sidebar */
@@ -275,11 +280,49 @@ body {
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow);
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xl);
+    height: calc(100vh - 200px);
+    /* Much larger height */
+    position: sticky;
+    top: var(--spacing-lg);
 }
+
+/* Add this new style for sidebar content container */
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    /* Important for flex scrolling */
+}
+
+/* Update sidebar sections to be scrollable */
+.sidebar-section {
+    flex-shrink: 0;
+    /* Prevent sections from shrinking */
+}
+
+/* Make the layers section scrollable */
+/* Make the layers section take most of the space */
+.sidebar-section:first-child {
+    flex: 1;
+    /* Take all available space */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Allow it to shrink */
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Layer list should scroll */
+.sidebar-section:first-child h3 {
+    flex-shrink: 0;
+    /* Keep header fixed */
+    margin-bottom: var(--spacing-md);
+}
+
+
 
 .sidebar-section h3 {
     font-size: var(--font-size-lg);
@@ -316,14 +359,17 @@ body {
 }
 
 /* Footer */
+/* Adjust footer to be less tall */
 .app-footer {
     background: white;
     border-radius: var(--border-radius-lg);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     margin-top: var(--spacing-lg);
     box-shadow: var(--shadow);
     font-size: var(--font-size-sm);
     color: var(--gray-600);
+    min-height: 40px;
+    /* Smaller footer */
 }
 
 .footer-content {
@@ -419,10 +465,21 @@ body {
     display: none !important;
 }
 
-.mb-4 { margin-bottom: var(--spacing-md); }
-.mb-8 { margin-bottom: var(--spacing-xl); }
-.mt-4 { margin-top: var(--spacing-md); }
-.mt-8 { margin-top: var(--spacing-xl); }
+.mb-4 {
+    margin-bottom: var(--spacing-md);
+}
+
+.mb-8 {
+    margin-bottom: var(--spacing-xl);
+}
+
+.mt-4 {
+    margin-top: var(--spacing-md);
+}
+
+.mt-8 {
+    margin-top: var(--spacing-xl);
+}
 
 .text-mono {
     font-family: var(--font-mono);
@@ -462,6 +519,7 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -479,7 +537,7 @@ body {
     .main-layout {
         grid-template-columns: 1fr;
     }
-    
+
     .sidebar {
         max-height: 400px;
     }
@@ -489,7 +547,7 @@ body {
     .container {
         padding: var(--spacing-sm);
     }
-    
+
     .app-header,
     .file-loader,
     .sidebar,
@@ -497,15 +555,15 @@ body {
     .content-body {
         padding: var(--spacing-md);
     }
-    
+
     .header-title h1 {
         font-size: var(--font-size-2xl);
     }
-    
+
     .tab-navigation {
         flex-wrap: wrap;
     }
-    
+
     .footer-content {
         flex-direction: column;
         gap: var(--spacing-sm);
@@ -518,13 +576,41 @@ body {
         padding: var(--spacing-sm) var(--spacing-md);
         font-size: var(--font-size-sm);
     }
-    
+
     .tab-btn {
         padding: var(--spacing-sm) var(--spacing-md);
         font-size: var(--font-size-xs);
     }
-    
+
     .search-input {
         padding: var(--spacing-md) var(--spacing-lg);
+    }
+}
+
+/* Adjust sidebar for different screen sizes */
+@media (max-height: 900px) {
+    .sidebar {
+        height: calc(100vh - 180px);
+        /* Adjust for smaller screens */
+    }
+}
+
+@media (max-height: 700px) {
+    .sidebar {
+        height: calc(100vh - 160px);
+        /* Even smaller screens */
+    }
+
+    .layer-item {
+        padding: 8px 12px;
+        font-size: var(--font-size-xs);
+    }
+}
+
+/* Very large screens - give even more space */
+@media (min-height: 1080px) {
+    .sidebar {
+        height: calc(100vh - 240px);
+        /* More space for tall screens */
     }
 }
