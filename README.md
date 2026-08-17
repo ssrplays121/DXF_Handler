@@ -1,6 +1,6 @@
 # DXF Handler & Viewer
 
-A simple tool to extract DXF layer data into JSON and view it in 3D in your browser.
+A simple tool to extract DXF layer data into JSON and view it in 3D in your browser. Initially built as part of an internship that did not pan out and this code was never utilized.
 
 ## Quick Start
 
